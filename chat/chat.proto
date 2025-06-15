@@ -3,6 +3,8 @@ syntax = "proto3";
 
 package chat;
 
+option go_package = "grpc-course-protobuf/pb/chat";
+
 service ChatService {
   rpc SendMessage(stream ChatMessage) returns (ChatResponse); // Client streaming RPC
   rpc ReceiveMessage(ReceiveMessageRequest) returns (stream ChatMessage); // Server streaming RPC

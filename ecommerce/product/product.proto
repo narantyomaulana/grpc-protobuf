@@ -2,6 +2,8 @@
 
  package ecommerce.product;
 
+ option go_package = "grpc-course-protobuf/pb/ecommerce/product";
+
  message Product {
   int64 id = 1;
   string name = 2;

@@ -2,8 +2,9 @@ package main
 
 import (
 	"context"
-	"grpc-course-protobuf/pb/user"
+	"grpc-course-protobuf/pb/chat"
 	"log"
+	"time"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -15,23 +16,47 @@ func main() {
 		log.Fatal("Failed to create gRPC client connection:", err)
 	}
 
-	userClient := user.NewUserServiceClient(clientConn)
+	chatClient := chat.NewChatServiceClient(clientConn)
+	stream, err := chatClient.SendMessage(context.Background())
 
-	response, err := userClient.CreateUser(context.Background(), &user.User{
-		Id:      1,
-		Age:     13,
-		Balance: 13000,
-		Address: &user.Address{
-			Id:          123,
-			FullAddress: "123 Main St, Springfield",
-			Province:    "Springfield Province",
-			City:        "Springfield City",
-		},
+	if err != nil {
+		log.Fatal("Failed to create stream:", err)
+	}
+
+	err = stream.Send(&chat.ChatMessage{
+		UserId:  123,
+		Content: "Hello, this is a test message!",
 	})
 
 	if err != nil {
-		log.Fatal("Failed to create user:", err)
-	} else {
-		log.Println("Response from server:", response.Message)
+		log.Fatal("Failed to send message:", err)
 	}
+
+	err = stream.Send(&chat.ChatMessage{
+		UserId:  123,
+		Content: "Hello, Again!",
+	})
+
+	if err != nil {
+		log.Fatal("Failed to send message:", err)
+	}
+
+	time.Sleep(5 * time.Second)
+
+	err = stream.Send(&chat.ChatMessage{
+		UserId:  123,
+		Content: "Hello, Brother!",
+	})
+
+	if err != nil {
+		log.Fatal("Failed to send message:", err)
+	}
+
+	res, err := stream.CloseAndRecv()
+
+	if err != nil {
+		log.Fatal("Failed to close :", err)
+	}
+
+	log.Println("Connection is close. Message: ", res.Message)
 }
